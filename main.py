@@ -6,7 +6,7 @@ from cenarios.exterior import Exterior
 pygame.init()
 
 #janela
-tela = pygame.display.set_mode((640, 480))
+tela = pygame.display.set_mode((1280, 640))
 pygame.display.set_caption("Meu Jogo")
 
 quarto = Quarto()
@@ -42,12 +42,10 @@ while rodando:
 
     if cenario_atual == exterior:
         #posição da câmera
-        camera_x = personagem.rect.centerx - 640 // 2
-        camera_y = personagem.rect.centery - 480 // 2
+        camera_x = personagem.rect.centerx - tela.get_width() // 2
+        camera_y = personagem.rect.centery - tela.get_height() // 2
 
-        camera_x = max(0, min(camera_x, exterior.LARGURA - 640))
-        camera_y = max(0, min(camera_y, exterior.ALTURA - 480))
-
+        
         #desenha mapa
         cenario_atual.desenhar(tela, camera_x, camera_y)
 
