@@ -34,8 +34,7 @@ class Exterior:
                 self.ALTURA
             ),
 
-            # Obstáculo provisório
-            pygame.Rect(350, 150, 100, 100)
+            
         ]
 
         self.estrada = pygame.Rect(250, 0, 140, self.ALTURA)
@@ -61,24 +60,6 @@ class Exterior:
             tela,
             (85, 78, 65),
             estrada_tela
-        )
-
-        # Obstáculo provisório
-        obstaculo = self.paredes[4].move(-camera_x, -camera_y)
-
-        pygame.draw.rect(
-            tela,
-            (100, 100, 100),
-            obstaculo
-        )
-
-        # Posto
-        posto_tela = self.posto.move(-camera_x, -camera_y)
-
-        pygame.draw.rect(
-            tela,
-            (90, 75, 65),
-            posto_tela
         )
 
         # Paredes laterais
@@ -124,9 +105,19 @@ class Exterior:
                 self.muralha_lateral,
                 (0 - camera_x, y - camera_y)
             )
-            
+
             # Direita
             tela.blit(
                 self.muralha_lateral,
                 (self.LARGURA - largura_sprite - camera_x, y - camera_y)
             )
+
+            self.construcoes = {
+                "administracao": pygame.Rect(650, 300, 220, 160),
+                "galpao": pygame.Rect(1500, 250, 300, 200),
+                "oficina": pygame.Rect(1850, 580, 220, 170),
+                "alojamento": pygame.Rect(560, 1000, 240, 180),
+                "deposito": pygame.Rect(1450, 1040, 260, 190),
+                "tunel": pygame.Rect(2050, 1510, 150, 100),
+                "comunicacoes": pygame.Rect(850, 1570, 180, 140),
+            }
