@@ -19,7 +19,7 @@ class Personagem(pygame.sprite.Sprite):
         self.atual = 0
         self.andando = False
         self.image = self.sprites_respirando[self.atual]
-        self.image = pygame.transform.scale(self.image, (32*4, 32*4))
+        self.image = pygame.transform.scale(self.image, (32*2, 32*2))
 
         #hitbox
         self.rect = self.image.get_rect()

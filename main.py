@@ -6,7 +6,7 @@ from cenarios.exterior import Exterior
 pygame.init()
 
 #janela
-tela = pygame.display.set_mode((1280, 640))
+tela = pygame.display.set_mode((1600, 900))
 pygame.display.set_caption("Meu Jogo")
 
 quarto = Quarto()
