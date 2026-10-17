@@ -86,9 +86,9 @@ class Exterior:
         )
 
         #prédio - lotes 2 e 3
-        self.predio = pygame.Rect(
-            650, 40,
-            780, 320
+        self.base_militar = pygame.Rect(
+            520, -60,
+            1030, 480
         )
 
         #casinha_laika - lote 17
@@ -97,10 +97,10 @@ class Exterior:
             160, 160    # largura e altura
         )
 
-        #prédio_militar - lote 13 e 14
-        self.predio_militar = pygame.Rect(
-            1160, 1030,
-            780, 320
+        #edificio - lote 13 e 14
+        self.predio_residencial = pygame.Rect(
+            1090, 980,
+            920, 430
         )
 
         #prédio_propaganda - lote 11
@@ -108,6 +108,14 @@ class Exterior:
             60, 930,
             340, 300
         )
+
+        # Caldeirão - lote 5
+        self.caldeirao = pygame.Rect(
+            2150, 140,
+            96, 96
+        )
+
+
 
         self.sprite_quarto = pygame.image.load(
             "sprites/sprite_quarto/sprite_2.png"
@@ -131,6 +139,53 @@ class Exterior:
 
         self.sprite_laika = pygame.transform.scale(self.sprite_laika, (160, 160)
         )
+
+        self.sprite_militar = pygame.image.load(
+            "sprites/sprite_militar/sprite_0.png"
+        ).convert_alpha()
+
+        self.sprite_militar = pygame.transform.scale(
+            self.sprite_militar, (1040, 490)
+        )
+
+        self.sprite_edificio = pygame.image.load(
+            "sprites/sprite_edificio/sprite_0.png"
+        ).convert_alpha()
+
+        self.sprite_edificio = pygame.transform.scale(
+            self.sprite_edificio, (920, 430)
+        )
+
+        self.sprites_caldeirao = [
+            pygame.transform.scale(
+            pygame.image.load(
+                "sprites/sprite_caldeirao/sprite_0.png"
+            ).convert_alpha(), (96, 96)),
+
+            pygame.transform.scale(
+            pygame.image.load(
+                "sprites/sprite_caldeirao/sprite_1.png"
+            ).convert_alpha(), (96, 96))
+        ]
+
+        self.quadro_caldeirao = 0
+        self.tempo_animacao_caldeirao = 0
+
+        self.sprites_abobora = [
+            pygame.image.load(
+                "sprites/sprite_abobora/sprite_0.png"
+            ).convert_alpha(),
+        
+            pygame.image.load(
+                "sprites/sprite_abobora/sprite_1.png"
+            ).convert_alpha()
+        ]
+
+        self.aboboras = [
+            pygame.Rect(700, 250, 64, 64),
+            pygame.Rect(1200, 300, 64, 64),
+            pygame.Rect(2200, 250, 64, 64),
+        ]
 
     def desenhar(self, tela, camera_x=0, camera_y=0):
         # Chão
@@ -268,21 +323,13 @@ class Exterior:
 
 
         #prédio - lote 2 e 3
-        predio_tela = self.predio.move(
+        militar_tela = self.base_militar.move(
             -camera_x, -camera_y
         )
 
-        pygame.draw.rect(
-            tela,
-            (115, 112, 104), 
-            predio_tela
-        )
-
-        pygame.draw.rect(
-            tela,
-            (45, 44, 41), 
-            predio_tela,
-            4
+        tela.blit(
+            self.sprite_militar,
+            militar_tela.topleft
         )
         
         #casinha_laika
@@ -294,24 +341,7 @@ class Exterior:
             self.sprite_laika,
             laika_tela.topleft
         )
-
-        #prédio_militar
-        predio_militar_tela = self.predio_militar.move(
-            -camera_x, -camera_y
-        )
-
-        pygame.draw.rect(
-            tela,
-            (91, 96, 91),
-            predio_militar_tela
-        )
-
-        pygame.draw.rect(
-            tela,
-            (35, 38, 35),
-            predio_militar_tela,
-            4
-        )
+        
 
         #prédio_propaganda
         propaganda_tela = self.predio_propaganda.move(
@@ -321,6 +351,42 @@ class Exterior:
         tela.blit(
             self.sprite_propaganda,
             propaganda_tela.topleft
+        )
+
+        # prédio residencial - lotes 13 e 14
+        edificio_tela = self.predio_residencial.move(
+            -camera_x, -camera_y
+        )
+
+        tela.blit(
+            self.sprite_edificio,
+            edificio_tela.topleft
+        )
+
+        # Caldeirão - lote 5
+        caldeirao_tela = self.caldeirao.move(
+            -camera_x, -camera_y
+        )
+
+        self.quadro_caldeirao = (
+            pygame.time.get_ticks() // 300
+        ) % 2
+
+        tela.blit(
+            self.sprites_caldeirao[self.quadro_caldeirao],
+            caldeirao_tela.topleft
+        )
+
+        quadro_abobora = (pygame.time.get_ticks() // 300) % 2
+
+        for abobora in self.aboboras:
+            abobora_tela = abobora.move(
+                -camera_x, -camera_y
+        )
+
+        tela.blit(
+            self.sprites_abobora[quadro_abobora],
+            abobora_tela.topleft
         )
 
 
