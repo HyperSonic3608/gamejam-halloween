@@ -1,68 +1,304 @@
+
 import pygame
+
 from personagem import Personagem
 from cenarios.quarto import Quarto
 from cenarios.exterior import Exterior
+from cenarios.militar import Militar
+from cenarios.propaganda import Propaganda
+from cenarios.residencial import Residencial
+from cenarios.puzzle import Puzzle
+
 
 pygame.init()
 
-#janela
 tela = pygame.display.set_mode((1600, 900))
 pygame.display.set_caption("Meu Jogo")
 
+clock = pygame.time.Clock()
+
+
+# CENÁRIOS
+
 quarto = Quarto()
 exterior = Exterior()
-cenario_atual = quarto
-personagem = Personagem(cenario_atual.paredes)
+militar = Militar()
+propaganda = Propaganda()
+residencial = Residencial()
+puzzle = Puzzle()
 
-#sprites
+
+# PORTAS E ÁREAS DE INTERAÇÃO
+
+porta_externa = pygame.Rect(130, 350, 160, 200)
+porta_militar = pygame.Rect(980, 380, 100, 60)
+porta_propaganda = pygame.Rect(250, 1290, 100, 60)
+porta_residencial = pygame.Rect(1500, 1360, 100, 60)
+porta_puzzle = pygame.Rect(2250, 1360, 100, 60)
+
+
+# PERSONAGEM
+
+cenario_atual = quarto
+personagem = None
+
 grupo_personagem = pygame.sprite.Group()
-grupo_personagem.add(personagem)
+
+carta_aberta = False
+carta_propaganda_aberta = False
+carta_militar_aberta = False
+
+# ESTADOS DA LAIKA
+tela_laika_aberta = False
+carta_laika_aberta = False
+
+
+# FUNÇÕES AUXILIARES
+
+def atualizar_hitbox():
+    if personagem is not None:
+        personagem.hitbox.x = personagem.rect.x + 40
+        personagem.hitbox.y = personagem.rect.y + 90
+
+
+def criar_personagem(posicao, cenario):
+    global personagem
+
+    personagem = Personagem(cenario.paredes)
+    personagem.rect.topleft = posicao
+
+    atualizar_hitbox()
+
+    grupo_personagem.empty()
+    grupo_personagem.add(personagem)
+
+
+def entrar_no_cenario(cenario, posicao):
+    global cenario_atual
+    global carta_aberta
+    global carta_propaganda_aberta
+    global carta_militar_aberta
+    global tela_laika_aberta
+    global carta_laika_aberta
+
+    cenario_atual = cenario
+
+    carta_aberta = False
+    carta_propaganda_aberta = False
+    carta_militar_aberta = False
+
+    tela_laika_aberta = False
+    carta_laika_aberta = False
+
+    personagem.paredes = cenario.paredes
+    personagem.rect.topleft = posicao
+
+    atualizar_hitbox()
+
+
+def sair_para_exterior(posicao):
+    entrar_no_cenario(exterior, posicao)
+
+
+# LOOP PRINCIPAL
 
 rodando = True
-clock = pygame.time.Clock()
 
 while rodando:
 
     for evento in pygame.event.get():
+
         if evento.type == pygame.QUIT:
             rodando = False
 
-        if evento.type == pygame.KEYDOWN:
-            if evento.key == pygame.K_e:
-                if quarto.personagem_perto_da_porta(personagem):
-                    cenario_atual = exterior
+        # ESC: FECHAR A CARTA OU SAIR DA TELA DA LAIKA
 
-                    personagem.paredes = exterior.paredes
+        if evento.type == pygame.KEYDOWN and evento.key == pygame.K_ESCAPE:
 
-                    personagem.rect.topleft = (100, 200)
-                    personagem.hitbox.x = personagem.rect.x + 40
-                    personagem.hitbox.y = personagem.rect.y + 90
+            if carta_laika_aberta:
+                carta_laika_aberta = False
 
-    grupo_personagem.update()
+            elif tela_laika_aberta:
+                tela_laika_aberta = False
+
+        # TECLA E
+
+        if evento.type == pygame.KEYDOWN and evento.key == pygame.K_e:
+
+            # LAIKA: ABRIR A CARTA NA TELA VERDE
+
+            if cenario_atual == exterior and personagem is not None:
+
+                if carta_laika_aberta:
+                    pass
+
+                elif tela_laika_aberta:
+                    carta_laika_aberta = True
+
+                elif exterior.personagem_perto_da_laika(personagem):
+                    tela_laika_aberta = True
+
+                # EXTERIOR: ENTRAR NOS PRÉDIOS
+                elif personagem.hitbox.colliderect(porta_externa):
+                    entrar_no_cenario(quarto, (270, 300))
+
+                elif personagem.hitbox.colliderect(porta_militar):
+                    entrar_no_cenario(militar, (290, 300))
+
+                elif personagem.hitbox.colliderect(porta_propaganda):
+                    entrar_no_cenario(propaganda, (290, 300))
+
+                elif personagem.hitbox.colliderect(porta_residencial):
+                    entrar_no_cenario(residencial, (290, 300))
+
+                elif personagem.hitbox.colliderect(porta_puzzle):
+                    entrar_no_cenario(puzzle, (290, 300))
+
+            # RESIDENCIAL
+
+            elif cenario_atual == residencial and personagem is not None:
+
+                if carta_aberta:
+                    carta_aberta = False
+
+                elif residencial.personagem_perto_da_mesa(personagem):
+                    carta_aberta = True
+
+                elif residencial.personagem_perto_da_porta(personagem):
+                    sair_para_exterior((1500, 1350))
+
+            # QUARTO
+
+            elif cenario_atual == quarto:
+
+                if not quarto.acordou:
+                    quarto.acordar()
+
+                    criar_personagem(
+                        (quarto.cama_x + 200, quarto.cama_y + 100),
+                        quarto
+                    )
+
+                elif (
+                    personagem is not None
+                    and quarto.personagem_perto_da_porta(personagem)
+                ):
+                    sair_para_exterior((180, 400))
+
+            # PRÉDIO MILITAR
+
+            elif cenario_atual == militar and personagem is not None:
+
+                if carta_militar_aberta:
+                    carta_militar_aberta = False
+
+                elif militar.personagem_perto_da_mesa(personagem):
+                    carta_militar_aberta = True
+
+                elif militar.personagem_perto_da_porta(personagem):
+                    sair_para_exterior((1000, 350))
+
+            # PRÉDIO DA PROPAGANDA
+
+            elif cenario_atual == propaganda and personagem is not None:
+
+                if carta_propaganda_aberta:
+                    carta_propaganda_aberta = False
+
+                elif propaganda.personagem_perto_da_mesa(personagem):
+                    carta_propaganda_aberta = True
+
+                elif propaganda.personagem_perto_da_porta(personagem):
+                    sair_para_exterior((180, 900))
+
+            # PRÉDIO DO PUZZLE
+
+            elif cenario_atual == puzzle and personagem is not None:
+
+                if puzzle.personagem_perto_da_porta(personagem):
+                    sair_para_exterior((2250, 1320))
+
+    # ATUALIZAÇÃO DO PERSONAGEM
+    # O personagem não se move com nenhuma tela de pista aberta.
+
+    if (
+        personagem is not None
+        and not carta_aberta
+        and not carta_propaganda_aberta
+        and not carta_militar_aberta
+        and not tela_laika_aberta
+        and not carta_laika_aberta
+    ):
+        grupo_personagem.update()
+
+    # DESENHO DOS CENÁRIOS
 
     if cenario_atual == exterior:
-        #posição da câmera
-        camera_x = personagem.rect.centerx - tela.get_width() // 2
-        camera_y = personagem.rect.centery - tela.get_height() // 2
 
-        
-        #desenha mapa
-        cenario_atual.desenhar(tela, camera_x, camera_y)
+        if tela_laika_aberta:
 
-        #personagem na posição relativa à câmera
-        tela.blit(
-            personagem.image,
-            (personagem.rect.x - camera_x,
-            personagem.rect.y - camera_y)
-        )
+            # TELA VERDE COM A CASINHA AMPLIADA
+            exterior.desenhar_tela_laika(tela)
+
+            # CARTA DA HOMENAGEM À LAIKA
+            if carta_laika_aberta:
+                exterior.desenhar_carta_laika(tela)
+
+        else:
+
+            # EXTERIOR NORMAL COM CÂMERA
+
+            camera_x = personagem.rect.centerx - tela.get_width() // 2
+            camera_y = personagem.rect.centery - tela.get_height() // 2
+
+            exterior.desenhar(tela, camera_x, camera_y)
+
+            # RETÂNGULO PROVISÓRIO DA PORTA DO PUZZLE
+
+            pygame.draw.rect(
+                tela,
+                (255, 0, 0),
+                pygame.Rect(
+                    porta_puzzle.x - camera_x,
+                    porta_puzzle.y - camera_y,
+                    porta_puzzle.width,
+                    porta_puzzle.height
+                ),
+                3
+            )
+
+            tela.blit(
+                personagem.image,
+                (
+                    personagem.rect.x - camera_x,
+                    personagem.rect.y - camera_y
+                )
+            )
 
     else:
+
         cenario_atual.desenhar(tela)
-        grupo_personagem.draw(tela)
+
+        if personagem is not None:
+            grupo_personagem.draw(tela)
+
+    # CARTA DO RESIDENCIAL
+
+    if cenario_atual == residencial and carta_aberta:
+        residencial.desenhar_carta(tela)
+
+    # CARTA DA PROPAGANDA
+
+    if cenario_atual == propaganda and carta_propaganda_aberta:
+        propaganda.desenhar_carta(tela)
+
+    # CARTA MILITAR
+
+    if cenario_atual == militar and carta_militar_aberta:
+        militar.desenhar_carta(tela)
 
     pygame.display.flip()
-
-
     clock.tick(60)
+
 
 pygame.quit()
