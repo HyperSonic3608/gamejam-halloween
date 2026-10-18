@@ -146,7 +146,7 @@ class Exterior:
         self.quadro_caldeirao = 0
         self.tempo_animacao_caldeirao = 0
 
-        # Abóboras
+        # Abóboras animadas
         self.sprites_abobora = [
             pygame.image.load(
                 "sprites/sprite_abobora/sprite_0.png"
@@ -156,14 +156,85 @@ class Exterior:
             ).convert_alpha(),
         ]
 
-        self.aboboras = [
-            pygame.Rect(700, 250, 64, 64),
-            pygame.Rect(1200, 300, 64, 64),
-            pygame.Rect(2200, 250, 64, 64),
+        # Redimensiona os sprites uma única vez
+        self.sprites_abobora_redimensionados = [
+            pygame.transform.scale(sprite, (64, 64))
+            for sprite in self.sprites_abobora
         ]
 
+        # Abóboras
+        self.aboboras_por_lote = {
+            4: [
+                pygame.Rect(1680, 90, 64, 64),
+                pygame.Rect(1810, 40, 64, 64),
+            ],
+
+            5: [
+                pygame.Rect(2130, 90, 64, 64),
+                pygame.Rect(2350, 100, 64, 64),
+            ],
+
+            # FILEIRA 2 — lotes livres
+            6: [
+                pygame.Rect(200, 550, 64, 64),
+                pygame.Rect(250, 700, 64, 64),
+            ],
+
+            7: [
+                pygame.Rect(720, 550, 64, 64),
+                pygame.Rect(670, 700, 64, 64),
+            ],
+
+            8: [
+                pygame.Rect(1300, 550, 64, 64),
+                pygame.Rect(1150, 700, 64, 64),
+            ],
+
+            9: [
+                pygame.Rect(1800, 550, 64, 64),
+                pygame.Rect(1650, 700, 64, 64),
+            ],
+
+            10: [
+                pygame.Rect(2300, 550, 64, 64),
+                pygame.Rect(2150, 700, 64, 64),
+            ],
+
+            # FILEIRA 3 — apenas o lote 12
+            12: [
+                pygame.Rect(800, 1050, 64, 64),
+                pygame.Rect(650, 1200, 64, 64),
+                pygame.Rect(850, 1300, 64, 64),
+            ],
+
+            # FILEIRA 4
+            16: [
+                pygame.Rect(100, 1490, 64, 64),
+                pygame.Rect(250, 1490, 64, 64),
+            ],
+
+            17: [
+                pygame.Rect(600, 1660, 64, 64),
+                pygame.Rect(900, 1540, 64, 64),
+            ],
+
+            18: [
+                pygame.Rect(1150, 1490, 64, 64),
+                pygame.Rect(1300, 1500, 64, 64),
+            ],
+
+            19: [
+                pygame.Rect(1650, 1490, 64, 64),
+                pygame.Rect(1800, 1500, 64, 64),
+            ],
+
+            20: [
+                pygame.Rect(2150, 1490, 64, 64),
+                pygame.Rect(2300, 1500, 64, 64),
+            ],
+        }
+
         # Edifício do puzzle (lote 15)
-        # O prédio permanece no exterior, mas sem desenhar a porta secreta.
         self.predio_puzzle = pygame.Rect(2090, 945, 460, 490)
 
         self.sprite_puzzle = pygame.image.load(
@@ -172,6 +243,88 @@ class Exterior:
 
         self.sprite_puzzle = pygame.transform.scale(
             self.sprite_puzzle, (460, 490)
+        )
+
+        # Árvores organizadas por lote
+        self.arvores_por_lote = {
+            4: [
+                pygame.Rect(1650, 150, 120, 120),
+                pygame.Rect(1780, 180, 120, 120),
+                pygame.Rect(1650, 280, 120, 120),
+                pygame.Rect(1800, 300, 120, 120),
+            ],
+
+            5: [
+                pygame.Rect(2130, 270, 120, 120),
+                pygame.Rect(2350, 270, 120, 120),
+            ],
+
+            # FILEIRA 2
+            6: [
+                pygame.Rect(100, 550, 120, 120),
+                pygame.Rect(180, 700, 120, 120),
+            ],
+
+            7: [
+                pygame.Rect(650, 550, 120, 120),
+                pygame.Rect(800, 700, 120, 120),
+            ],
+
+            8: [
+                pygame.Rect(1150, 550, 120, 120),
+                pygame.Rect(1300, 700, 120, 120),
+            ],
+
+            9: [
+                pygame.Rect(1650, 550, 120, 120),
+                pygame.Rect(1800, 700, 120, 120),
+            ],
+
+            10: [
+                pygame.Rect(2150, 550, 120, 120),
+                pygame.Rect(2300, 700, 120, 120),
+            ],
+
+            # FILEIRA 3
+            12: [
+                pygame.Rect(650, 1050, 120, 120),
+                pygame.Rect(800, 1200, 120, 120),
+                pygame.Rect(650, 1300, 120, 120),
+            ],
+
+            # FILEIRA 4
+            16: [
+                pygame.Rect(100, 1550, 120, 120),
+                pygame.Rect(250, 1600, 120, 120),
+            ],
+
+            17: [
+                pygame.Rect(800, 1550, 120, 120),
+                pygame.Rect(900, 1600, 120, 120),
+            ],
+
+            18: [
+                pygame.Rect(1150, 1550, 120, 120),
+                pygame.Rect(1300, 1600, 120, 120),
+            ],
+
+            19: [
+                pygame.Rect(1650, 1550, 120, 120),
+                pygame.Rect(1800, 1600, 120, 120),
+            ],
+
+            20: [
+                pygame.Rect(2150, 1550, 120, 120),
+                pygame.Rect(2300, 1600, 120, 120),
+            ],
+        }
+
+        self.sprite_arvore = pygame.image.load(
+            "sprites/sprite_arvore/sprite_0.png"
+        ).convert_alpha()
+
+        self.sprite_arvore_redimensionada = pygame.transform.scale(
+            self.sprite_arvore, (120, 120)
         )
 
     def desenhar(self, tela, camera_x=0, camera_y=0):
@@ -282,21 +435,15 @@ class Exterior:
             )
 
         # Quarto inicial
-        quarto_tela = self.quarto_inicial.move(
-            -camera_x, -camera_y
-        )
+        quarto_tela = self.quarto_inicial.move(-camera_x, -camera_y)
         tela.blit(self.sprite_quarto, quarto_tela.topleft)
 
         # Prédio militar
-        militar_tela = self.base_militar.move(
-            -camera_x, -camera_y
-        )
+        militar_tela = self.base_militar.move(-camera_x, -camera_y)
         tela.blit(self.sprite_militar, militar_tela.topleft)
 
         # Casinha da Laika
-        laika_tela = self.casinha_laika.move(
-            -camera_x, -camera_y
-        )
+        laika_tela = self.casinha_laika.move(-camera_x, -camera_y)
         tela.blit(self.sprite_laika, laika_tela.topleft)
 
         # Prédio da propaganda
@@ -316,9 +463,7 @@ class Exterior:
             pygame.time.get_ticks() // 300
         ) % 2
 
-        caldeirao_tela = self.caldeirao.move(
-            -camera_x, -camera_y
-        )
+        caldeirao_tela = self.caldeirao.move(-camera_x, -camera_y)
 
         tela.blit(
             self.sprites_caldeirao[self.quadro_caldeirao],
@@ -329,23 +474,34 @@ class Exterior:
         mesa_tela = self.mesa.move(-camera_x, -camera_y)
         tela.blit(self.sprite_mesa, mesa_tela.topleft)
 
-        # Abóboras animadas
+        # Abóboras animadas organizadas por lote
         quadro_abobora = (pygame.time.get_ticks() // 300) % 2
 
-        for abobora in self.aboboras:
-            abobora_tela = abobora.move(
-                -camera_x, -camera_y
-            )
-
-            tela.blit(
-                self.sprites_abobora[quadro_abobora],
-                abobora_tela.topleft
-            )
-
-        # Edifício do puzzle: sem porta secreta no exterior
-        puzzle_tela = self.predio_puzzle.move(
-            -camera_x, -camera_y
+        sprite_abobora_atual = (
+            self.sprites_abobora_redimensionados[quadro_abobora]
         )
+
+        for numero_lote, aboboras in self.aboboras_por_lote.items():
+            for abobora in aboboras:
+                abobora_tela = abobora.move(-camera_x, -camera_y)
+
+                tela.blit(
+                    sprite_abobora_atual,
+                    abobora_tela.topleft
+                )
+
+        # Árvores organizadas por lote
+        for numero_lote, arvores in self.arvores_por_lote.items():
+            for arvore in arvores:
+                arvore_tela = arvore.move(-camera_x, -camera_y)
+
+                tela.blit(
+                    self.sprite_arvore_redimensionada,
+                    arvore_tela.topleft
+                )
+
+        # Edifício do puzzle
+        puzzle_tela = self.predio_puzzle.move(-camera_x, -camera_y)
         tela.blit(self.sprite_puzzle, puzzle_tela.topleft)
 
     # INTERAÇÃO COM A MESA DO RITUAL
@@ -355,10 +511,7 @@ class Exterior:
         return personagem.hitbox.colliderect(area_interacao)
 
     def desenhar_carta_ritual(self, tela):
-        camada = pygame.Surface(
-            tela.get_size(),
-            pygame.SRCALPHA
-        )
+        camada = pygame.Surface(tela.get_size(), pygame.SRCALPHA)
         camada.fill((0, 0, 0, 150))
         tela.blit(camada, (0, 0))
 
@@ -384,11 +537,7 @@ class Exterior:
 
         cor_texto = (0, 0, 0)
 
-        titulo = fonte_titulo.render(
-            "РИТУАЛ",
-            False,
-            cor_texto
-        )
+        titulo = fonte_titulo.render("РИТУАЛ", False, cor_texto)
 
         tela.blit(
             titulo,
@@ -428,8 +577,7 @@ class Exterior:
         altura_pista = max(1, round(altura_original * escala))
 
         pista = pygame.transform.scale(
-            imagem,
-            (largura_pista, altura_pista)
+            imagem, (largura_pista, altura_pista)
         )
 
         pista_x = carta.centerx - largura_pista // 2
@@ -437,11 +585,7 @@ class Exterior:
 
         tela.blit(pista, (pista_x, pista_y))
 
-        rodape = fonte_rodape.render(
-            "E - voltar",
-            False,
-            cor_texto
-        )
+        rodape = fonte_rodape.render("E - voltar", False, cor_texto)
 
         tela.blit(
             rodape,
@@ -500,10 +644,7 @@ class Exterior:
         )
 
     def desenhar_carta_laika(self, tela):
-        camada = pygame.Surface(
-            tela.get_size(),
-            pygame.SRCALPHA
-        )
+        camada = pygame.Surface(tela.get_size(), pygame.SRCALPHA)
         camada.fill((0, 0, 0, 150))
         tela.blit(camada, (0, 0))
 
@@ -529,11 +670,7 @@ class Exterior:
 
         cor_texto = (0, 0, 0)
 
-        titulo = fonte_titulo.render(
-            "Лайка",
-            False,
-            cor_texto
-        )
+        titulo = fonte_titulo.render("Лайка", False, cor_texto)
 
         tela.blit(
             titulo,
@@ -552,11 +689,7 @@ class Exterior:
         espacamento = 42
 
         for i, linha in enumerate(linhas):
-            texto = fonte_texto.render(
-                linha,
-                False,
-                cor_texto
-            )
+            texto = fonte_texto.render(linha, False, cor_texto)
 
             tela.blit(
                 texto,
@@ -582,8 +715,7 @@ class Exterior:
         altura_pista = max(1, round(altura_original * escala))
 
         pista = pygame.transform.scale(
-            imagem,
-            (largura_pista, altura_pista)
+            imagem, (largura_pista, altura_pista)
         )
 
         pista_x = carta.centerx - largura_pista // 2
@@ -591,11 +723,7 @@ class Exterior:
 
         tela.blit(pista, (pista_x, pista_y))
 
-        rodape = fonte_rodape.render(
-            "ESC - voltar",
-            False,
-            cor_texto
-        )
+        rodape = fonte_rodape.render("ESC - voltar", False, cor_texto)
 
         tela.blit(
             rodape,
