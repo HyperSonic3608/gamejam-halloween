@@ -1,3 +1,4 @@
+
 import pygame
 
 
@@ -82,9 +83,13 @@ class Exterior:
             self.sprite_laika_original, (160, 160)
         )
 
-        # Imagem da pista encontrada na carta da Laika
+        # Pistas
         self.pista_laika_original = pygame.image.load(
             "sprites/pista_laika/sprite_0.png"
+        ).convert_alpha()
+
+        self.pista_ritual_original = pygame.image.load(
+            "sprites/pista_ritual/sprite_0.png"
         ).convert_alpha()
 
         # Prédio residencial
@@ -148,7 +153,7 @@ class Exterior:
             ).convert_alpha(),
             pygame.image.load(
                 "sprites/sprite_abobora/sprite_1.png"
-            ).convert_alpha()
+            ).convert_alpha(),
         ]
 
         self.aboboras = [
@@ -157,7 +162,8 @@ class Exterior:
             pygame.Rect(2200, 250, 64, 64),
         ]
 
-        # Edifício do puzzle
+        # Edifício do puzzle (lote 15)
+        # O prédio permanece no exterior, mas sem desenhar a porta secreta.
         self.predio_puzzle = pygame.Rect(2090, 945, 460, 490)
 
         self.sprite_puzzle = pygame.image.load(
@@ -169,7 +175,6 @@ class Exterior:
         )
 
     def desenhar(self, tela, camera_x=0, camera_y=0):
-        # Chão
         tela.fill(self.COR_CHAO)
 
         # Estrada principal
@@ -337,11 +342,114 @@ class Exterior:
                 abobora_tela.topleft
             )
 
-        # Edifício do puzzle
+        # Edifício do puzzle: sem porta secreta no exterior
         puzzle_tela = self.predio_puzzle.move(
             -camera_x, -camera_y
         )
         tela.blit(self.sprite_puzzle, puzzle_tela.topleft)
+
+    # INTERAÇÃO COM A MESA DO RITUAL
+
+    def personagem_perto_da_mesa(self, personagem):
+        area_interacao = self.mesa.inflate(100, 100)
+        return personagem.hitbox.colliderect(area_interacao)
+
+    def desenhar_carta_ritual(self, tela):
+        camada = pygame.Surface(
+            tela.get_size(),
+            pygame.SRCALPHA
+        )
+        camada.fill((0, 0, 0, 150))
+        tela.blit(camada, (0, 0))
+
+        largura = 900
+        altura = 500
+
+        x = (tela.get_width() - largura) // 2
+        y = (tela.get_height() - altura) // 2
+
+        carta = pygame.Rect(x, y, largura, altura)
+
+        pygame.draw.rect(
+            tela, (228, 217, 188), carta, border_radius=8
+        )
+        pygame.draw.rect(
+            tela, (130, 115, 87), carta,
+            width=4, border_radius=8
+        )
+
+        fonte_titulo = pygame.font.Font(None, 52)
+        fonte_texto = pygame.font.Font(None, 34)
+        fonte_rodape = pygame.font.Font(None, 26)
+
+        cor_texto = (0, 0, 0)
+
+        titulo = fonte_titulo.render(
+            "РИТУАЛ",
+            False,
+            cor_texto
+        )
+
+        tela.blit(
+            titulo,
+            (
+                carta.centerx - titulo.get_width() // 2,
+                y + 30
+            )
+        )
+
+        texto = fonte_texto.render(
+            "O Halloween finalmente chegou… complete o ritual.",
+            False,
+            cor_texto
+        )
+
+        tela.blit(
+            texto,
+            (
+                carta.centerx - texto.get_width() // 2,
+                y + 100
+            )
+        )
+
+        imagem = self.pista_ritual_original
+
+        largura_maxima = 350
+        altura_maxima = 250
+
+        largura_original, altura_original = imagem.get_size()
+
+        escala = min(
+            largura_maxima / largura_original,
+            altura_maxima / altura_original
+        )
+
+        largura_pista = max(1, round(largura_original * escala))
+        altura_pista = max(1, round(altura_original * escala))
+
+        pista = pygame.transform.scale(
+            imagem,
+            (largura_pista, altura_pista)
+        )
+
+        pista_x = carta.centerx - largura_pista // 2
+        pista_y = y + 160
+
+        tela.blit(pista, (pista_x, pista_y))
+
+        rodape = fonte_rodape.render(
+            "E - voltar",
+            False,
+            cor_texto
+        )
+
+        tela.blit(
+            rodape,
+            (
+                carta.centerx - rodape.get_width() // 2,
+                carta.bottom - 35
+            )
+        )
 
     # INTERAÇÃO COM A LAIKA
 
@@ -349,7 +457,6 @@ class Exterior:
         return personagem.hitbox.colliderect(self.area_laika)
 
     def desenhar_tela_laika(self, tela):
-        # Fundo igual ao chão do mapa
         tela.fill(self.COR_CHAO)
 
         imagem = self.sprite_laika_original
@@ -393,7 +500,6 @@ class Exterior:
         )
 
     def desenhar_carta_laika(self, tela):
-        # Fundo escurecido
         camada = pygame.Surface(
             tela.get_size(),
             pygame.SRCALPHA
@@ -401,7 +507,6 @@ class Exterior:
         camada.fill((0, 0, 0, 150))
         tela.blit(camada, (0, 0))
 
-        # Carta
         largura = 900
         altura = 700
 
@@ -422,21 +527,19 @@ class Exterior:
         fonte_texto = pygame.font.Font(None, 34)
         fonte_rodape = pygame.font.Font(None, 26)
 
-        # Texto preto, sem antialiasing
         cor_texto = (0, 0, 0)
 
-        # Título centralizado
         titulo = fonte_titulo.render(
             "Лайка",
             False,
             cor_texto
         )
+
         tela.blit(
             titulo,
             (carta.centerx - titulo.get_width() // 2, y + 30)
         )
 
-        # Texto alinhado à esquerda
         linhas = [
             "Em homenagem àquela que nunca voltou.",
             "Seu nome marcou a história da exploração espacial",
@@ -463,7 +566,6 @@ class Exterior:
                 )
             )
 
-        # Pista menor na parte inferior
         imagem = self.pista_laika_original
 
         largura_maxima = 350
@@ -489,7 +591,6 @@ class Exterior:
 
         tela.blit(pista, (pista_x, pista_y))
 
-        # Instrução no rodapé
         rodape = fonte_rodape.render(
             "ESC - voltar",
             False,
