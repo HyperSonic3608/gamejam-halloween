@@ -27,16 +27,17 @@ class MenuInicial:
             "sprite_0.png"
         )
 
-        self.logo = pygame.image.load(caminho_logo).convert_alpha()
+        self.logo = pygame.image.load(
+            caminho_logo
+        ).convert_alpha()
 
-        # Limita a logo para caber na parte superior da tela
-        limite_largura = largura - 80
-        limite_altura = altura // 2
+        # Redimensiona a logo sem aumentá-la
+        limite_largura = largura - 40
+        limite_altura = int(altura * 0.90)
 
         escala = min(
             limite_largura / self.logo.get_width(),
             limite_altura / self.logo.get_height(),
-            1
         )
 
         novo_tamanho = (
@@ -48,7 +49,12 @@ class MenuInicial:
             self.logo, novo_tamanho
         )
 
-    def desenhar_texto_centralizado(self, tela, texto, fonte, cor, y):
+        # Áreas clicáveis dos botões
+        self.botoes = []
+
+    def desenhar_texto_centralizado(
+        self, tela, texto, fonte, cor, y
+    ):
         imagem = fonte.render(texto, True, cor)
         x = (self.largura - imagem.get_width()) // 2
         tela.blit(imagem, (x, y))
@@ -60,7 +66,7 @@ class MenuInicial:
         cinza = (150, 150, 150)
 
         if self.tela_atual == "menu":
-            # Logo centralizada na parte superior
+            # Logo centralizada
             x_logo = (self.largura - self.logo.get_width()) // 2
             tela.blit(self.logo, (x_logo, 35))
 
@@ -68,26 +74,37 @@ class MenuInicial:
             inicio_y = self.altura // 2 + 35
             espacamento = 42
 
-            for i, opcao in enumerate(self.opcoes):
-                cor = branco if i == self.selecionada else cinza
-                prefixo = "> " if i == self.selecionada else "  "
+            self.botoes = []
 
-                self.desenhar_texto_centralizado(
-                    tela,
-                    prefixo + opcao,
-                    self.fonte,
-                    cor,
-                    inicio_y + i * espacamento
-                )
+            for i, opcao in enumerate(self.opcoes):
+                prefixo = "> " if i == self.selecionada else "  "
+                texto = prefixo + opcao
+
+                cor = branco if i == self.selecionada else cinza
+                imagem = self.fonte.render(texto, True, cor)
+
+                x = (self.largura - imagem.get_width()) // 2
+                y = inicio_y + i * espacamento
+
+                tela.blit(imagem, (x, y))
+
+                # Área clicável um pouco maior que o texto
+                botao = imagem.get_rect(
+                    topleft=(x, y)
+                ).inflate(40, 14)
+
+                self.botoes.append(botao)
 
         elif self.tela_atual == "comandos":
             self.desenhar_texto_centralizado(
                 tela, "COMANDOS", self.fonte, branco, 100
             )
+
             comandos = [
                 "WASD - MOVIMENTAR",
                 "E - INTERAGIR",
-                "ESC - VOLTAR"
+                "ESC - VOLTAR",
+                "P - PAUSE"
             ]
 
             for i, comando in enumerate(comandos):
@@ -105,7 +122,7 @@ class MenuInicial:
                 branco, 200
             )
             self.desenhar_texto_centralizado(
-                tela, "MATEUS", self.fonte_pequena,
+                tela, "MATEUS MELO", self.fonte_pequena,
                 branco, 240
             )
             self.desenhar_texto_centralizado(
@@ -114,36 +131,62 @@ class MenuInicial:
             )
 
     def tratar_evento(self, evento):
-        if evento.type != pygame.KEYDOWN:
-            return None
-
         if self.tela_atual == "menu":
-            if evento.key in (pygame.K_UP, pygame.K_w):
-                self.selecionada = (
-                    self.selecionada - 1
-                ) % len(self.opcoes)
 
-            elif evento.key in (pygame.K_DOWN, pygame.K_s):
-                self.selecionada = (
-                    self.selecionada + 1
-                ) % len(self.opcoes)
+            # Navegação pelo teclado
+            if evento.type == pygame.KEYDOWN:
+                if evento.key in (pygame.K_UP, pygame.K_w):
+                    self.selecionada = (
+                        self.selecionada - 1
+                    ) % len(self.opcoes)
 
-            elif evento.key == pygame.K_RETURN:
-                opcao = self.opcoes[self.selecionada]
+                elif evento.key in (pygame.K_DOWN, pygame.K_s):
+                    self.selecionada = (
+                        self.selecionada + 1
+                    ) % len(self.opcoes)
 
-                if opcao == "JOGAR":
-                    return "jogar"
+                elif evento.key == pygame.K_RETURN:
+                    return self.executar_opcao(
+                        self.opcoes[self.selecionada]
+                    )
 
-                elif opcao == "COMANDOS":
-                    self.tela_atual = "comandos"
+            # Destaca a opção sob o cursor
+            elif evento.type == pygame.MOUSEMOTION:
+                for i, botao in enumerate(self.botoes):
+                    if botao.collidepoint(evento.pos):
+                        self.selecionada = i
+                        break
 
-                elif opcao == "CRÉDITOS":
-                    self.tela_atual = "creditos"
+            # Executa a opção clicada
+            elif evento.type == pygame.MOUSEBUTTONDOWN:
+                if evento.button == 1:
+                    for i, botao in enumerate(self.botoes):
+                        if botao.collidepoint(evento.pos):
+                            self.selecionada = i
+                            return self.executar_opcao(
+                                self.opcoes[i]
+                            )
 
-                elif opcao == "SAIR":
-                    return "sair"
+        else:
+            if (
+                evento.type == pygame.KEYDOWN
+                and evento.key == pygame.K_ESCAPE
+            ):
+                self.tela_atual = "menu"
 
-        elif evento.key == pygame.K_ESCAPE:
-            self.tela_atual = "menu"
+        return None
+
+    def executar_opcao(self, opcao):
+        if opcao == "JOGAR":
+            return "jogar"
+
+        elif opcao == "COMANDOS":
+            self.tela_atual = "comandos"
+
+        elif opcao == "CRÉDITOS":
+            self.tela_atual = "creditos"
+
+        elif opcao == "SAIR":
+            return "sair"
 
         return None

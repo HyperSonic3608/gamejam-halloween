@@ -22,8 +22,10 @@ class CorredorFinal:
         self.escurecimento_concluido = False
 
         # Camada preta do tamanho da janela.
+        info_tela = pygame.display.Info()
+
         self.tela_preta = pygame.Surface(
-            (self.largura_tela, self.altura)
+            (info_tela.current_w, info_tela.current_h)
         )
         self.tela_preta.fill((0, 0, 0))
         self.tela_preta.set_alpha(0)

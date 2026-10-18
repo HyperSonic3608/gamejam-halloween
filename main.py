@@ -20,8 +20,19 @@ pygame.init()
 # JANELA
 # ==================================================
 
-LARGURA_TELA = 1600
-ALTURA_TELA = 900
+info_tela = pygame.display.Info()
+
+LARGURA_TELA = info_tela.current_w
+ALTURA_TELA = info_tela.current_h
+
+tela = pygame.display.set_mode(
+    (LARGURA_TELA, ALTURA_TELA),
+    pygame.FULLSCREEN
+)
+
+pygame.display.set_caption("Halloween em Moscou")
+
+clock = pygame.time.Clock()
 
 tela = pygame.display.set_mode(
     (LARGURA_TELA, ALTURA_TELA)
@@ -38,6 +49,7 @@ clock = pygame.time.Clock()
 
 menu = MenuInicial(LARGURA_TELA, ALTURA_TELA)
 estado_jogo = "menu"
+opcao_pausa = 0
 
 
 # ==================================================
@@ -173,7 +185,7 @@ DURACAO_TRANSICAO_FIM = 3.0
 
 dialogos_finais = [
     ("Maria", "Você dormiu de novo assistindo a esse documentário?"),
-    ("Maria", "Anda, Ivan! Você vai perder o Halloween!"),
+    ("Maria", "Anda, Ivan! Você vai perder o Halloween! Vamos..."),
 ]
 
 
@@ -319,6 +331,8 @@ def desenhar_dialogo_final(superficie, nome, texto):
 # ==================================================
 # LOOP PRINCIPAL
 # ==================================================
+rect_voltar = pygame.Rect(0, 0, 0, 0)
+rect_sair = pygame.Rect(0, 0, 0, 0)
 
 rodando = True
 
@@ -336,10 +350,45 @@ while rodando:
             rodando = False
             continue
 
+        if evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_p:
+                if estado_jogo == "jogo":
+                    estado_jogo = "pausa"
+                elif estado_jogo == "pausa":
+                    estado_jogo = "jogo"
+
+        if estado_jogo == "pausa" and evento.type == pygame.KEYDOWN:
+
+            if evento.key in (pygame.K_UP, pygame.K_DOWN):
+                opcao_pausa = 1 - opcao_pausa
+
+            elif evento.key == pygame.K_RETURN:
+                if opcao_pausa == 0:
+                    estado_jogo = "jogo"
+                else:
+                    rodando = False
+
         # ------------------------------------------
         # MENU INICIAL
         # ------------------------------------------
 
+        # CLIQUES NO MENU DE PAUSA
+        if (
+            estado_jogo == "pausa"
+            and evento.type == pygame.MOUSEBUTTONDOWN
+            and evento.button == 1
+        ):
+            if rect_voltar.collidepoint(evento.pos):
+                estado_jogo = "jogo"
+
+            elif rect_sair.collidepoint(evento.pos):
+                rodando = False
+        
+        
+        # Enquanto estiver pausado, não processa outros eventos do jogo
+        if estado_jogo == "pausa":
+            continue
+        
         if estado_jogo == "menu":
 
             resultado = menu.tratar_evento(evento)
@@ -538,8 +587,8 @@ while rodando:
     # SEQUÊNCIA AUTOMÁTICA DO FINAL
     # ==================================================
 
-    if final_iniciado:
-
+    if final_iniciado and estado_jogo == "jogo":
+        
         tempo_etapa_final += dt
 
         if etapa_final == "corredor":
@@ -868,6 +917,59 @@ while rodando:
                 texto_fim,
                 retangulo_fim
             )
+
+
+    if estado_jogo == "pausa":
+        # Fundo escuro e transparente
+            overlay = pygame.Surface(
+                (LARGURA_TELA, ALTURA_TELA),
+                pygame.SRCALPHA
+            )
+            overlay.fill((0, 0, 0, 180))
+            tela.blit(overlay, (0, 0))
+
+            fonte_pause = pygame.font.SysFont(
+                "monospace", 36, bold=True
+            )
+            fonte_opcoes = pygame.font.SysFont(
+                "monospace", 24, bold=True
+            )
+
+            # Título
+            titulo = fonte_pause.render(
+                "JOGO PAUSADO", True, (255, 255, 255)
+            )
+            rect_titulo = titulo.get_rect(
+                center=(
+                    LARGURA_TELA // 2,
+                    ALTURA_TELA // 2 - 80
+                )
+            )
+            tela.blit(titulo, rect_titulo)
+
+            # Opção: voltar ao jogo
+            voltar = fonte_opcoes.render(
+                "VOLTAR AO JOGO", True, (255, 255, 255)
+            )
+            rect_voltar = voltar.get_rect(
+                center=(
+                    LARGURA_TELA // 2,
+                    ALTURA_TELA // 2
+                )
+            )
+            tela.blit(voltar, rect_voltar)
+
+            # Opção: sair do jogo
+            sair = fonte_opcoes.render(
+                "SAIR DO JOGO", True, (180, 180, 180)
+            )
+            rect_sair = sair.get_rect(
+                center=(
+                    LARGURA_TELA // 2,
+                    ALTURA_TELA // 2 + 50
+                )
+            )
+            tela.blit(sair, rect_sair)
 
     # ==================================================
     # FINALIZAÇÃO
