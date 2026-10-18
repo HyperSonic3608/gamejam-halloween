@@ -1,5 +1,7 @@
+
 import pygame
 
+from menu import MenuInicial
 from personagem import Personagem
 from cenarios.quarto import Quarto
 from cenarios.exterior import Exterior
@@ -25,9 +27,17 @@ tela = pygame.display.set_mode(
     (LARGURA_TELA, ALTURA_TELA)
 )
 
-pygame.display.set_caption("Meu Jogo")
+pygame.display.set_caption("Halloween em Moscou")
 
 clock = pygame.time.Clock()
+
+
+# ==================================================
+# MENU INICIAL
+# ==================================================
+
+menu = MenuInicial(LARGURA_TELA, ALTURA_TELA)
+estado_jogo = "menu"
 
 
 # ==================================================
@@ -38,6 +48,7 @@ fonte_dialogo = pygame.font.SysFont("monospace", 22, bold=True)
 fonte_nome = pygame.font.SysFont("monospace", 18, bold=True)
 fonte_fim = pygame.font.SysFont("monospace", 48, bold=True)
 fonte_instrucao = pygame.font.SysFont("monospace", 22, bold=True)
+
 
 # ==================================================
 # IMAGENS DA CENA FINAL
@@ -157,7 +168,6 @@ opacidade_sala = 0
 dialogo_atual = 0
 tempo_dialogo = 0.0
 
-# Duração da transição para a tela final.
 tempo_transicao_fim = 0.0
 DURACAO_TRANSICAO_FIM = 3.0
 
@@ -324,6 +334,22 @@ while rodando:
 
         if evento.type == pygame.QUIT:
             rodando = False
+            continue
+
+        # ------------------------------------------
+        # MENU INICIAL
+        # ------------------------------------------
+
+        if estado_jogo == "menu":
+
+            resultado = menu.tratar_evento(evento)
+
+            if resultado == "jogar":
+                estado_jogo = "jogo"
+
+            elif resultado == "sair":
+                rodando = False
+
             continue
 
         if final_iniciado:
@@ -541,7 +567,6 @@ while rodando:
                 int((tempo_etapa_final / 3.5) * 255)
             )
 
-            # A animação começa assim que a cena começa a ganhar cor.
             tempo_animacao_final += dt
 
             if tempo_animacao_final >= 0.5:
@@ -556,7 +581,6 @@ while rodando:
 
         elif etapa_final == "dialogo":
 
-            # Continua alternando as artes durante os diálogos.
             tempo_animacao_final += dt
 
             if tempo_animacao_final >= 0.5:
@@ -579,7 +603,6 @@ while rodando:
 
         elif etapa_final == "fim":
 
-            # Aumenta gradualmente o escurecimento.
             tempo_transicao_fim = min(
                 tempo_transicao_fim + dt,
                 DURACAO_TRANSICAO_FIM
@@ -590,7 +613,8 @@ while rodando:
     # ==================================================
 
     pode_atualizar_personagem = (
-        personagem is not None
+        estado_jogo == "jogo"
+        and personagem is not None
         and not final_iniciado
         and not tela_cadeado_aberta
         and not carta_aberta
@@ -609,7 +633,11 @@ while rodando:
     # DESENHO DO CENÁRIO NORMAL
     # ==================================================
 
-    if not final_iniciado:
+    if estado_jogo == "menu":
+
+        menu.desenhar(tela)
+
+    elif not final_iniciado:
 
         if cenario_atual == exterior:
 
@@ -662,7 +690,7 @@ while rodando:
                 x = (LARGURA_TELA - texto.get_width()) // 2
                 y = ALTURA_TELA - 80
 
-                tela.blit(texto,(x, y))
+                tela.blit(texto, (x, y))
 
             # Instrução para sair pela porta
             if (
@@ -760,13 +788,11 @@ while rodando:
 
         elif etapa_final == "despertar":
 
-            # Usa a arte em vez da sala antiga desenhada no Pygame.
             tela.blit(
                 imagens_finais[indice_imagem_final],
                 (0, 0)
             )
 
-            # Efeito de aparecimento durante o despertar.
             camada_escura = pygame.Surface(
                 (LARGURA_TELA, ALTURA_TELA)
             )
@@ -781,7 +807,6 @@ while rodando:
 
         elif etapa_final == "dialogo":
 
-            # Exibe a arte animada durante os diálogos.
             tela.blit(
                 imagens_finais[indice_imagem_final],
                 (0, 0)
@@ -797,19 +822,16 @@ while rodando:
 
         elif etapa_final == "fim":
 
-            # Progresso da transição: 0.0 até 1.0.
             progresso = min(
                 tempo_transicao_fim / DURACAO_TRANSICAO_FIM,
                 1.0
             )
 
-            # Desenha a imagem de fundo.
             tela.blit(
                 imagens_finais[indice_imagem_final],
                 (0, 0)
             )
 
-            # A imagem escurece progressivamente.
             camada_escura = pygame.Surface(
                 (LARGURA_TELA, ALTURA_TELA)
             )
@@ -825,7 +847,6 @@ while rodando:
                 (0, 0)
             )
 
-            # O texto FIM aparece gradualmente.
             texto_fim = fonte_fim.render(
                 "FIM",
                 True,
